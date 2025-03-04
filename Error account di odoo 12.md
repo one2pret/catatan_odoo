@@ -40,3 +40,9 @@ res = self._obj.execute(query, params)
 psycopg2.errors.UndefinedColumn: column account_invoice_tax.amount_total does not exist
 LINE 1: ...voice_tax"."amount_rounding" as "amount_rounding","account_i...
 ^
+
+
+### Dapat di atasi dengan mengupdate dulu modul seperti command di bawah ini 
+* python3 odoo-bin -d your_database_name -u account --stop-after-init
+* E:\project\odoo2024\Master\python36\python.exe  odoo-bin -c .\odoo_config.conf -d klj_16_02_25 -u account
+
