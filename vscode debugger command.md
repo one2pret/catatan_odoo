@@ -1,0 +1,1 @@
+E:\project\odoo2024\Master\python36\python.exe -m debugpy --listen 5678 E:\project\odoo2024\odoo12\odoo-bin -c odoo_config.conf --addons-path=E:\project\odoo2024\odoo12\addons,E:\project\odoo2024\custom_module\odoo12\mac-mrp,E:\project\odoo2024\custom_module\odoo12\mac-mhs,E:\project\odoo2024\custom_module\odoo12\wawan_module -d klj_16_02_25 --dev=all
