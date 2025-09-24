@@ -1,0 +1,192 @@
+📄 action_print_mutasi_hutang() – Dokumen Teknis
+📌 Tujuan
+
+Fungsi ini digunakan untuk menghasilkan laporan mutasi hutang vendor dalam format Excel (XLSX), mencakup:
+
+Saldo awal (sisa hutang sebelum periode)
+
+Mutasi selama periode:
+
+DPP (Dasar Pengenaan Pajak)
+
+Discount
+
+PPN
+
+Pembayaran
+
+Saldo akhir
+
+🧠 Konteks
+
+Model: account.invoice (Odoo 12)
+
+Format laporan: .xlsx
+
+Output: file downloadable melalui ir.actions.act_url
+
+Modul terkait: Invoicing / Accounting
+
+🏗️ Struktur Fungsi
+def action_print_mutasi_hutang(self, report_name, company, companys):
+
+📥 Parameter:
+
+report_name → Judul laporan (string)
+
+company → Nama perusahaan aktif
+
+companys → Digunakan untuk informasi perusahaan di laporan (optional)
+
+🔁 Alur Proses
+1. Persiapan File Excel
+workbook = xlsxwriter.Workbook(fp)
+worksheet = workbook.add_worksheet(report_name)
+
+
+Menyiapkan file Excel dan worksheet dengan format yang sudah didefinisikan (wbf).
+
+2. Set Header & Kolom
+worksheet.set_column(...)
+worksheet.merge_range(...)
+
+
+Menyusun judul, periode laporan, dan metadata seperti waktu cetak & user.
+
+3. Menyusun SQL Filter
+if len(i.company_ids.ids) == 1:
+    ...
+else:
+    ...
+
+
+Menyesuaikan query berdasarkan 1 atau banyak company_id.
+
+4. Mengambil Saldo Awal
+SELECT ai.partner_id, SUM(ai.residual)
+FROM account_invoice ai
+WHERE ai.date_invoice < %s
+AND ai.state = 'open'
+AND ai.type = 'in_invoice'
+AND ai.company_id = %s
+GROUP BY ai.partner_id
+
+
+Mengambil hutang yang belum dibayar (status: open) sebelum date_start.
+
+Menggunakan field residual sebagai saldo hutang vendor.
+
+5. Mengambil Invoice Aktif (Mutasi)
+SELECT ai.id
+FROM account_invoice ai
+WHERE ai.date_invoice BETWEEN %s AND %s
+AND ai.state = 'open'
+AND ai.type = 'in_invoice'
+AND ai.company_id = %s
+
+
+Mengambil semua invoice vendor dalam periode laporan.
+
+6. Agregasi Data per Vendor
+vendor_data[partner_name] = {
+    'partner_id': partner_id,
+    'saldo_awal': saldo_awal_data.get(partner_id, 0.0),
+    'dpp': 0.0,
+    'discount': 0.0,
+    'ppn': 0.0,
+    'pembayaran': 0.0,
+    'saldo_akhir': 0.0
+}
+
+
+Menyimpan data per vendor dalam dictionary.
+
+Menghindari duplikasi vendor.
+
+7. Perhitungan Mutasi
+for line in data.invoice_line_ids:
+    vendor_data[...]['dpp'] += line.price_subtotal
+    vendor_data[...]['discount'] += line.discount_amount or 0.0
+    vendor_data[...]['ppn'] += line.price_tax or 0.0
+
+vendor_data[...]['ppn'] += sum(...)  # Dari tax line
+vendor_data[...]['pembayaran'] += sum(...)  # Dari payment_ids
+
+
+Mengakumulasi nilai-nilai DPP, discount, PPN, dan pembayaran.
+
+Tidak lagi menyentuh saldo awal (dihitung terpisah sebelumnya).
+
+8. Menambahkan Vendor Tanpa Mutasi
+for partner_id, saldo in saldo_awal_data.items():
+    if partner_name not in vendor_data:
+        ...
+
+
+Vendor yang hanya punya saldo awal tapi tidak ada invoice baru tetap ditampilkan.
+
+9. Hitung Saldo Akhir
+vals['saldo_akhir'] = vals['saldo_awal'] + vals['dpp'] + vals['ppn'] - vals['pembayaran']
+
+
+Rumus akhir dari saldo hutang per vendor.
+
+10. Generate File Excel
+worksheet.write(...)  # Tulis isi per vendor
+workbook.close()
+
+
+Menulis data ke Excel dan mengembalikan file sebagai URL download.
+
+📦 Output File
+
+Nama file: Mutasi Hutang_2025-09-01_2025-09-30.xlsx
+
+Format kolom:
+
+No	Nama Vendor	Saldo Awal	DPP	Discount	PPN	Pembayaran	Saldo Akhir
+📌 Catatan Teknis
+
+Saldo awal dihitung dari invoice dengan:
+
+state = 'open'
+
+type = 'in_invoice'
+
+date_invoice < date_start
+
+Data bersumber dari:
+
+account.invoice.invoice_line_ids
+
+account.invoice.tax_line_ids
+
+account.invoice.payment_ids
+
+Kompatibel untuk Odoo 12.
+
+Tidak support multi-currency (belum ada konversi kurs).
+
+🚀 Saran Pengembangan Selanjutnya
+
+Tambahkan opsi filter in_refund (retur pembelian).
+
+Tambahkan konversi mata uang jika menggunakan multi-currency.
+
+Buat versi PDF menggunakan reportlab atau QWeb.
+
+Tambahkan total baris akhir di Excel (Total DPP, Total PPN, dll).
+
+📚 Referensi
+
+Odoo 12 Documentation – Accounting
+
+xlsxwriter Docs
+
+🧑‍💻 Developer
+
+Author: (Nama Kamu)
+
+Company: PT. KHARISMA LESTARI JAYA
+
+Last Updated: 2025-09-23
