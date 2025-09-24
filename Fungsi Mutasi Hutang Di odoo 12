@@ -1,3 +1,37 @@
+# 📊 Odoo 12 – Laporan Mutasi Hutang Vendor (Excel)
+
+Laporan ini dibuat menggunakan Odoo 12 dan berfungsi untuk menampilkan **mutasi hutang supplier/vendor** dalam periode tertentu dalam format **Excel (.xlsx)**.
+
+---
+
+## 📌 Tujuan
+
+Fungsi ini digunakan untuk menghasilkan laporan keuangan berupa:
+
+- **Saldo Awal Hutang** (sebelum periode)
+- **DPP** (Dasar Pengenaan Pajak)
+- **Discount**
+- **PPN**
+- **Pembayaran**
+- **Saldo Akhir Hutang** (setelah mutasi)
+
+---
+
+## 🧠 Model & Teknologi
+
+- **Odoo Version**: 12
+- **Model**: `account.invoice`
+- **Output**: `XLSX` file
+- **Library**: [xlsxwriter](https://xlsxwriter.readthedocs.io/)
+
+---
+
+## 🏗️ Fungsi Utama
+
+```python
+def action_print_mutasi_hutang(self, report_name, company, companys):
+
+
 📄 action_print_mutasi_hutang() – Dokumen Teknis
 📌 Tujuan
 
